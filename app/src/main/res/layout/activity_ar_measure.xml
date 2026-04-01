@@ -11,6 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Measurement overlay (markers + line) -->
+    <com.surendramaran.yolov8tflite.ar.ArMeasureOverlay
+        android:id="@+id/measure_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!-- Top Bar: Back + Instruction -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -73,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📏 Measurement Result"
+                android:text="Measurement Result"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"

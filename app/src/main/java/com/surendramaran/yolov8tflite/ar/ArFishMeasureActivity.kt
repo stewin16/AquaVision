@@ -51,6 +51,7 @@ class ArFishMeasureActivity : ComponentActivity() {
     private lateinit var tvMethod: TextView
     private lateinit var btnReset: ImageButton
     private lateinit var btnBack: ImageButton
+    private lateinit var measureOverlay: ArMeasureOverlay
 
     // Measurement state
     private var point1: FloatArray? = null // [x, y, z] world coordinates
@@ -74,6 +75,7 @@ class ArFishMeasureActivity : ComponentActivity() {
         tvMethod = findViewById(R.id.tv_method)
         btnReset = findViewById(R.id.btn_reset)
         btnBack = findViewById(R.id.btn_back)
+        measureOverlay = findViewById(R.id.measure_overlay)
 
         btnReset.setOnClickListener { resetMeasurement() }
         btnBack.setOnClickListener { finish() }
@@ -107,10 +109,10 @@ class ArFishMeasureActivity : ComponentActivity() {
 
                             depthSupported = isDepthModeSupported(Config.DepthMode.AUTOMATIC)
                             depthMode = if (depthSupported) {
-                                Log.d(TAG, "✅ Depth API ENABLED")
+                                Log.d(TAG, "Depth API ENABLED")
                                 Config.DepthMode.AUTOMATIC
                             } else {
-                                Log.d(TAG, "⚠️ Depth API NOT supported, using hit-test only")
+                                Log.d(TAG, "Depth API NOT supported, using hit-test only")
                                 Config.DepthMode.DISABLED
                             }
                         }
@@ -171,7 +173,8 @@ class ArFishMeasureActivity : ComponentActivity() {
     }
 
     private fun setupTouchListener() {
-        glSurfaceView.setOnTouchListener { _, event ->
+        // Touch goes on the overlay (which is on top of the GL surface)
+        measureOverlay.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 handleTap(event.x, event.y)
             }
@@ -205,13 +208,14 @@ class ArFishMeasureActivity : ComponentActivity() {
         if (point1 == null) {
             point1 = worldPoint
             runOnUiThread {
-                instructionText.text = "✅ Head marked! Now tap the TAIL of the fish"
+                instructionText.text = "Head marked! Now tap the TAIL of the fish"
+                measureOverlay.setPoint1(screenX, screenY)
             }
             Log.d(TAG, "Point 1: [${worldPoint[0]}, ${worldPoint[1]}, ${worldPoint[2]}]")
         } else {
             point2 = worldPoint
             Log.d(TAG, "Point 2: [${worldPoint[0]}, ${worldPoint[1]}, ${worldPoint[2]}]")
-            calculateAndDisplay()
+            calculateAndDisplay(screenX, screenY)
         }
     }
 
@@ -310,7 +314,7 @@ class ArFishMeasureActivity : ComponentActivity() {
         return null
     }
 
-    private fun calculateAndDisplay() {
+    private fun calculateAndDisplay(screenX: Float, screenY: Float) {
         val p1 = point1 ?: return
         val p2 = point2 ?: return
 
@@ -340,7 +344,10 @@ class ArFishMeasureActivity : ComponentActivity() {
         Log.d(TAG, "Weight: %.2f kg".format(weightKg))
 
         runOnUiThread {
-            instructionText.text = "✅ Measurement complete!"
+            instructionText.text = "Measurement complete!"
+
+            // Animate overlay: marker + line
+            measureOverlay.setPoint2(screenX, screenY, lengthCm)
 
             tvLength.text = "%.1f cm".format(lengthCm)
             tvWidth.text = "%.1f cm".format(widthCm)
@@ -358,6 +365,7 @@ class ArFishMeasureActivity : ComponentActivity() {
         point1 = null
         point2 = null
         instructionText.text = "Tap the HEAD of the fish to start measuring"
+        measureOverlay.reset()
         resultCard.animate().alpha(0f).setDuration(200).withEndAction {
             resultCard.visibility = View.GONE
         }.start()
