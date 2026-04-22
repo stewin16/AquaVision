@@ -512,7 +512,7 @@ class CameraFragment : Fragment(), Detector.DetectorListener {
         
         binding.fab.visibility = View.VISIBLE
         binding.btnGallery.visibility = View.VISIBLE
-        binding.liveCountBadge.visibility = View.VISIBLE
+
 
         slidePanelDown()
 
@@ -622,7 +622,7 @@ class CameraFragment : Fragment(), Detector.DetectorListener {
         binding.fab.visibility = View.VISIBLE
         binding.fab.setImageResource(R.drawable.ic_camera)
         binding.btnGallery.visibility = View.VISIBLE
-        binding.liveCountBadge.visibility = View.VISIBLE
+
 
         binding.overlay.setCameraMode()
         binding.overlay.clear()
