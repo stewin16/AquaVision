@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LayoutDashboard, Fish, Shield, Users, ChevronDown, ChevronUp, MapPin, Clock, User, AlertTriangle, Tag } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
+import { useTheme } from '../components/ThemeProvider';
 
 interface Stats {
   totalCatches: number;
@@ -54,8 +56,8 @@ export default function DashboardPage() {
   const logout = () => { localStorage.clear(); router.push('/login'); };
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
+    <div className="min-h-screen theme-bg-page flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: 'var(--spinner-color)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -67,19 +69,20 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
+    <div className="min-h-screen theme-bg-page">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-50 theme-bg-header backdrop-blur-xl" style={{ borderBottom: '1px solid var(--surface-border)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/logo.png" className="w-12 h-12 object-contain drop-shadow" alt="AquaVision Logo" />
             <div>
-              <h1 className="text-white font-bold text-lg">AquaVision Monitor</h1>
-              <p className="text-slate-500 text-xs">Real-time Fisheries Intelligence</p>
+              <h1 className="theme-text-primary font-bold text-lg">AquaVision Monitor</h1>
+              <p className="theme-text-muted text-xs">Real-time Fisheries Intelligence</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={fetchData} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-slate-300 text-sm hover:bg-white/10 transition">↻ Refresh</button>
+            <ThemeToggle />
+            <button onClick={fetchData} className="px-3 py-1.5 theme-btn-secondary rounded-lg text-sm transition">↻ Refresh</button>
             <button onClick={logout} className="px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm hover:bg-red-500/20 transition">Logout</button>
           </div>
         </div>
@@ -87,10 +90,10 @@ export default function DashboardPage() {
 
       {/* Tabs */}
       <div className="max-w-7xl mx-auto px-4 mt-4">
-        <div className="flex gap-1 bg-white/5 rounded-xl p-1 w-fit">
+        <div className="flex gap-1 rounded-xl p-1 w-fit" style={{ background: 'var(--surface)' }}>
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === tab.id ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-400 hover:text-white'}`}>
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === tab.id ? 'theme-tab-active' : 'theme-text-muted hover:text-[var(--text-primary)]'}`}>
               {tab.icon} {tab.label}
             </button>
           ))}
@@ -109,40 +112,40 @@ export default function DashboardPage() {
 
 function StatCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color: string }) {
   return (
-    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-      <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">{label}</p>
+    <div className="theme-bg-card rounded-2xl p-5">
+      <p className="theme-text-muted text-xs font-medium uppercase tracking-wider">{label}</p>
       <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
-      {sub && <p className="text-slate-500 text-xs mt-1">{sub}</p>}
+      {sub && <p className="theme-text-muted text-xs mt-1">{sub}</p>}
     </div>
   );
 }
 
 function OverviewTab({ stats }: { stats: Stats | null }) {
-  if (!stats) return <p className="text-slate-400">No data available</p>;
+  if (!stats) return <p className="theme-text-secondary">No data available</p>;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Catches" value={stats.totalCatches} color="text-white" sub="All synced records" />
-        <StatCard label="Unique Species" value={stats.uniqueSpecies} color="text-cyan-400" sub="Detected species" />
+        <StatCard label="Total Catches" value={stats.totalCatches} color="theme-text-primary" sub="All synced records" />
+        <StatCard label="Unique Species" value={stats.uniqueSpecies} color="text-cyan-500" sub="Detected species" />
         <StatCard label="Protected Alerts" value={stats.protectedCount} color="text-red-400" sub="Conservation flags" />
-        <StatCard label="Avg Freshness" value={`${stats.avgFreshness}%`} color="text-green-400" sub="Quality index" />
+        <StatCard label="Avg Freshness" value={`${stats.avgFreshness}%`} color="text-green-500" sub="Quality index" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Top Species */}
-        <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-          <h3 className="text-white font-semibold mb-4">Top Species</h3>
+        <div className="theme-bg-card rounded-2xl p-5">
+          <h3 className="theme-text-primary font-semibold mb-4">Top Species</h3>
           <div className="space-y-3">
             {stats.topSpecies.map((sp, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-slate-500 text-xs font-mono w-5">{i + 1}</span>
+                <span className="theme-text-muted text-xs font-mono w-5">{i + 1}</span>
                 <div className="flex-1">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-white text-sm">{sp.name}</span>
-                    <span className="text-slate-400 text-xs">{sp.count} ({sp.pct}%)</span>
+                    <span className="theme-text-primary text-sm">{sp.name}</span>
+                    <span className="theme-text-secondary text-xs">{sp.count} ({sp.pct}%)</span>
                   </div>
-                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style={{ width: `${sp.pct}%` }} />
+                  <div className="h-1.5 theme-bar-track rounded-full overflow-hidden">
+                    <div className="h-full theme-bar-fill rounded-full" style={{ width: `${sp.pct}%` }} />
                   </div>
                 </div>
               </div>
@@ -151,16 +154,16 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
         </div>
 
         {/* Top Locations */}
-        <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-          <h3 className="text-white font-semibold mb-4">Top Locations</h3>
+        <div className="theme-bg-card rounded-2xl p-5">
+          <h3 className="theme-text-primary font-semibold mb-4">Top Locations</h3>
           <div className="space-y-3">
             {stats.topLocations.map((loc, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+              <div key={i} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--surface-divider)' }}>
                 <div className="flex items-center gap-2">
-                  <span className="text-cyan-400 text-sm">📍</span>
-                  <span className="text-white text-sm">{loc.name}</span>
+                  <span className="text-cyan-500 text-sm">📍</span>
+                  <span className="theme-text-primary text-sm">{loc.name}</span>
                 </div>
-                <span className="text-slate-400 text-xs bg-white/5 px-2 py-0.5 rounded-full">{loc.count}</span>
+                <span className="theme-text-secondary text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface)' }}>{loc.count}</span>
               </div>
             ))}
           </div>
@@ -168,18 +171,18 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
       </div>
 
       {/* Daily Trend */}
-      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-        <h3 className="text-white font-semibold mb-4">Daily Catch Trend (30 days)</h3>
+      <div className="theme-bg-card rounded-2xl p-5">
+        <h3 className="theme-text-primary font-semibold mb-4">Daily Catch Trend (30 days)</h3>
         <div className="flex items-end gap-1 h-32">
           {stats.dailyTrend.map((d, i) => {
             const max = Math.max(...stats.dailyTrend.map(x => x.count), 1);
             const h = (d.count / max) * 100;
             return (
               <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap transition">
+                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 theme-tooltip text-xs px-2 py-1 rounded whitespace-nowrap transition" style={{ background: 'var(--tooltip-bg)', color: 'var(--text-primary)' }}>
                   {d.date}: {d.count}
                 </div>
-                <div className="w-full bg-gradient-to-t from-cyan-500 to-blue-500 rounded-t transition-all" style={{ height: `${h}%`, minHeight: d.count > 0 ? '4px' : '0' }} />
+                <div className="w-full theme-bar-fill rounded-t transition-all" style={{ height: `${h}%`, minHeight: d.count > 0 ? '4px' : '0' }} />
               </div>
             );
           })}
@@ -217,12 +220,12 @@ function LogsTab({ logs }: { logs: LogEntry[] }) {
   };
 
   return (
-    <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
-      <div className="p-5 border-b border-white/5">
-        <h3 className="text-white font-semibold text-lg">Recent Catch Logs</h3>
-        <p className="text-slate-400 text-xs mt-1">Synced from AquaVision mobile app · Click on a log to view details</p>
+    <div className="theme-bg-card rounded-2xl overflow-hidden">
+      <div className="p-5" style={{ borderBottom: '1px solid var(--surface-divider)' }}>
+        <h3 className="theme-text-primary font-semibold text-lg">Recent Catch Logs</h3>
+        <p className="theme-text-muted text-xs mt-1">Synced from AquaVision mobile app · Click on a log to view details</p>
       </div>
-      <div className="divide-y divide-white/5 max-h-[700px] overflow-y-auto hide-scrollbar">
+      <div className="theme-divide max-h-[700px] overflow-y-auto hide-scrollbar">
         {logs.map((log, i) => {
           const isExpanded = expandedId === (log.id || String(i));
           const { dateStr, timeStr } = formatDateTime(log.timestamp);
@@ -233,23 +236,23 @@ function LogsTab({ logs }: { logs: LogEntry[] }) {
               {/* Collapsed Header - Always visible */}
               <button
                 onClick={() => toggleExpand(log.id || String(i))}
-                className="w-full p-4 flex items-center gap-4 hover:bg-white/5 transition text-left cursor-pointer"
+                className="w-full p-4 flex items-center gap-4 theme-bg-surface-hover transition text-left cursor-pointer"
               >
                 {log.image_urls?.[0] && (
-                  <img src={log.image_urls[0]} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-white/10" />
+                  <img src={log.image_urls[0]} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" style={{ border: '1px solid var(--surface-border)' }} />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-white text-sm font-semibold">{log.title}</h4>
+                    <h4 className="theme-text-primary text-sm font-semibold">{log.title}</h4>
                     {log.is_protected && (
                       <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/20 text-red-300 text-[10px] rounded-full font-bold uppercase tracking-wide">
                         <AlertTriangle className="w-3 h-3" /> Protected
                       </span>
                     )}
                   </div>
-                  <p className="text-slate-500 text-xs mt-1">{dateStr} · {timeStr}</p>
+                  <p className="theme-text-muted text-xs mt-1">{dateStr} · {timeStr}</p>
                 </div>
-                <div className="flex-shrink-0 text-slate-500">
+                <div className="flex-shrink-0 theme-text-muted">
                   {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </div>
               </button>
@@ -260,54 +263,54 @@ function LogsTab({ logs }: { logs: LogEntry[] }) {
                   <div className="ml-0 md:ml-[72px] space-y-4">
                     {/* Image enlarged */}
                     {log.image_urls?.[0] && (
-                      <div className="rounded-xl overflow-hidden border border-white/10 w-fit">
+                      <div className="rounded-xl overflow-hidden w-fit" style={{ border: '1px solid var(--surface-border)' }}>
                         <img src={log.image_urls[0]} alt="" className="max-w-[280px] max-h-[200px] object-cover" />
                       </div>
                     )}
 
                     {/* Details broken into readable lines */}
-                    <div className="bg-white/5 rounded-xl p-4 space-y-2 border border-white/5">
-                      <h5 className="text-slate-300 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                    <div className="theme-bg-surface rounded-xl p-4 space-y-2">
+                      <h5 className="theme-text-secondary text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 mb-3">
                         <Tag className="w-3.5 h-3.5" /> Details
                       </h5>
                       {detailParts.length > 1 ? (
                         <ul className="space-y-1.5">
                           {detailParts.map((part, idx) => (
-                            <li key={idx} className="text-slate-300 text-sm flex items-start gap-2">
+                            <li key={idx} className="theme-text-secondary text-sm flex items-start gap-2">
                               <span className="text-cyan-500/60 mt-1.5 w-1.5 h-1.5 rounded-full bg-cyan-500/60 flex-shrink-0" />
                               {part}
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-slate-300 text-sm leading-relaxed">{log.details}</p>
+                        <p className="theme-text-secondary text-sm leading-relaxed">{log.details}</p>
                       )}
                     </div>
 
                     {/* Metadata Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {/* Date & Time */}
-                      <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                      <div className="theme-bg-surface rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-1.5">
-                          <Clock className="w-4 h-4 text-cyan-400" />
-                          <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Date & Time</span>
+                          <Clock className="w-4 h-4 text-cyan-500" />
+                          <span className="theme-text-muted text-xs font-medium uppercase tracking-wider">Date & Time</span>
                         </div>
-                        <p className="text-white text-sm font-medium">{dateStr}</p>
-                        <p className="text-slate-300 text-sm">{timeStr}</p>
+                        <p className="theme-text-primary text-sm font-medium">{dateStr}</p>
+                        <p className="theme-text-secondary text-sm">{timeStr}</p>
                       </div>
 
                       {/* Location */}
                       {(log.location?.name || log.location?.lat) && (
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                        <div className="theme-bg-surface rounded-xl p-3">
                           <div className="flex items-center gap-2 mb-1.5">
                             <MapPin className="w-4 h-4 text-pink-400" />
-                            <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Location</span>
+                            <span className="theme-text-muted text-xs font-medium uppercase tracking-wider">Location</span>
                           </div>
                           {log.location?.name && (
-                            <p className="text-white text-sm font-medium">{log.location.name}</p>
+                            <p className="theme-text-primary text-sm font-medium">{log.location.name}</p>
                           )}
                           {log.location?.lat && log.location?.lng && (
-                            <p className="text-slate-400 text-xs mt-1 font-mono">
+                            <p className="theme-text-muted text-xs mt-1 font-mono">
                               Lat: {log.location.lat.toFixed(6)}, Lng: {log.location.lng.toFixed(6)}
                             </p>
                           )}
@@ -316,16 +319,16 @@ function LogsTab({ logs }: { logs: LogEntry[] }) {
 
                       {/* User */}
                       {log.user?.name && (
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                        <div className="theme-bg-surface rounded-xl p-3">
                           <div className="flex items-center gap-2 mb-1.5">
                             <User className="w-4 h-4 text-blue-400" />
-                            <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Logged By</span>
+                            <span className="theme-text-muted text-xs font-medium uppercase tracking-wider">Logged By</span>
                           </div>
                           <div className="flex items-center gap-2">
                             {log.user?.pfp_url && (
-                              <img src={log.user.pfp_url} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10" />
+                              <img src={log.user.pfp_url} alt="" className="w-6 h-6 rounded-full object-cover" style={{ border: '1px solid var(--surface-border)' }} />
                             )}
-                            <p className="text-white text-sm font-medium">{log.user.name}</p>
+                            <p className="theme-text-primary text-sm font-medium">{log.user.name}</p>
                           </div>
                         </div>
                       )}
@@ -347,7 +350,7 @@ function LogsTab({ logs }: { logs: LogEntry[] }) {
             </div>
           );
         })}
-        {logs.length === 0 && <div className="p-8 text-center text-slate-500">No logs yet. Sync data from the AquaVision app.</div>}
+        {logs.length === 0 && <div className="p-8 text-center theme-text-muted">No logs yet. Sync data from the AquaVision app.</div>}
       </div>
     </div>
   );
@@ -359,7 +362,7 @@ function ProtectedTab() {
   useEffect(() => {
     fetch('/api/protected-species').then(r => r.json()).then(d => { if (d.success) setData(d.data); });
   }, []);
-  if (!data) return <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mt-12" />;
+  if (!data) return <div className="animate-spin w-6 h-6 border-2 border-t-transparent rounded-full mx-auto mt-12" style={{ borderColor: 'var(--spinner-color)', borderTopColor: 'transparent' }} />;
 
   const formatLastSeen = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -372,15 +375,15 @@ function ProtectedTab() {
   return (
     <div className="space-y-4">
       <StatCard label="Total Protected Detections" value={data.totalProtectedDetections} color="text-red-400" sub="Wildlife Protection Act flagged species" />
-      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
-        <h3 className="text-white font-semibold text-lg mb-2">Protected Species Encounters</h3>
-        <p className="text-slate-400 text-xs mb-4">Click on a species to view details</p>
+      <div className="theme-bg-card rounded-2xl p-5">
+        <h3 className="theme-text-primary font-semibold text-lg mb-2">Protected Species Encounters</h3>
+        <p className="theme-text-muted text-xs mb-4">Click on a species to view details</p>
         <div className="space-y-3">
           {data.speciesSummary.map((sp, i) => {
             const isExpanded = expandedSpecies === sp.species;
             const { date, time } = formatLastSeen(sp.lastSeen);
             return (
-              <div key={i} className="bg-red-500/5 border border-red-500/10 rounded-xl overflow-hidden transition-all">
+              <div key={i} className="theme-protected-bg rounded-xl overflow-hidden transition-all">
                 {/* Header - clickable */}
                 <button
                   onClick={() => setExpandedSpecies(prev => prev === sp.species ? null : sp.species)}
@@ -389,39 +392,39 @@ function ProtectedTab() {
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
                     <div>
-                      <h4 className="text-white font-semibold">{sp.species}</h4>
-                      <p className="text-slate-400 text-xs mt-0.5">Last seen: {date}</p>
+                      <h4 className="theme-text-primary font-semibold">{sp.species}</h4>
+                      <p className="theme-text-muted text-xs mt-0.5">Last seen: {date}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="px-3 py-1 bg-red-500/20 text-red-300 text-sm font-bold rounded-full">{sp.count}</span>
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                    {isExpanded ? <ChevronUp className="w-4 h-4 theme-text-muted" /> : <ChevronDown className="w-4 h-4 theme-text-muted" />}
                   </div>
                 </button>
 
                 {/* Expanded details */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-red-500/10 pt-3">
+                  <div className="px-4 pb-4 space-y-3 pt-3" style={{ borderTop: '1px solid var(--protected-border-subtle)' }}>
                     {/* Date & Time */}
-                    <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                    <div className="theme-bg-surface rounded-xl p-3">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <Clock className="w-4 h-4 text-cyan-400" />
-                        <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Last Seen</span>
+                        <Clock className="w-4 h-4 text-cyan-500" />
+                        <span className="theme-text-muted text-xs font-medium uppercase tracking-wider">Last Seen</span>
                       </div>
-                      <p className="text-white text-sm font-medium">{date}</p>
-                      <p className="text-slate-300 text-sm">{time}</p>
+                      <p className="theme-text-primary text-sm font-medium">{date}</p>
+                      <p className="theme-text-secondary text-sm">{time}</p>
                     </div>
 
                     {/* Locations listed individually */}
                     {sp.locations.length > 0 && (
-                      <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                      <div className="theme-bg-surface rounded-xl p-3">
                         <div className="flex items-center gap-2 mb-2">
                           <MapPin className="w-4 h-4 text-pink-400" />
-                          <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">Detection Locations</span>
+                          <span className="theme-text-muted text-xs font-medium uppercase tracking-wider">Detection Locations</span>
                         </div>
                         <ul className="space-y-1.5">
                           {sp.locations.map((loc, idx) => (
-                            <li key={idx} className="text-slate-300 text-sm flex items-center gap-2">
+                            <li key={idx} className="theme-text-secondary text-sm flex items-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-pink-400/60 flex-shrink-0" />
                               {loc}
                             </li>
@@ -440,7 +443,7 @@ function ProtectedTab() {
               </div>
             );
           })}
-          {data.speciesSummary.length === 0 && <p className="text-slate-500 text-center py-4">No protected species detected yet</p>}
+          {data.speciesSummary.length === 0 && <p className="theme-text-muted text-center py-4">No protected species detected yet</p>}
         </div>
       </div>
     </div>
@@ -452,25 +455,25 @@ function UsersTab() {
   useEffect(() => {
     fetch('/api/users').then(r => r.json()).then(d => { if (d.success) setData(d.data); });
   }, []);
-  if (!data) return <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mt-12" />;
+  if (!data) return <div className="animate-spin w-6 h-6 border-2 border-t-transparent rounded-full mx-auto mt-12" style={{ borderColor: 'var(--spinner-color)', borderTopColor: 'transparent' }} />;
   return (
     <div className="space-y-4">
       <StatCard label="Active Users" value={data.totalUsers} color="text-blue-400" sub="Fishermen using AquaVision" />
-      <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden">
+      <div className="theme-bg-card rounded-2xl overflow-hidden">
         <table className="w-full">
-          <thead><tr className="border-b border-white/10">
-            <th className="text-left text-slate-400 text-xs p-3 font-medium">User</th>
-            <th className="text-left text-slate-400 text-xs p-3 font-medium">Total Logs</th>
-            <th className="text-left text-slate-400 text-xs p-3 font-medium">Protected</th>
-            <th className="text-left text-slate-400 text-xs p-3 font-medium">Last Active</th>
+          <thead><tr style={{ borderBottom: '1px solid var(--surface-border)' }}>
+            <th className="text-left theme-table-header text-xs p-3 font-medium">User</th>
+            <th className="text-left theme-table-header text-xs p-3 font-medium">Total Logs</th>
+            <th className="text-left theme-table-header text-xs p-3 font-medium">Protected</th>
+            <th className="text-left theme-table-header text-xs p-3 font-medium">Last Active</th>
           </tr></thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="theme-divide">
             {data.users.map((u, i) => (
-              <tr key={i} className="hover:bg-white/5">
-                <td className="p-3 text-white text-sm">{u.name}</td>
-                <td className="p-3 text-slate-300 text-sm">{u.totalLogs}</td>
-                <td className="p-3"><span className={`${u.protectedCount > 0 ? 'text-red-400' : 'text-slate-500'} text-sm`}>{u.protectedCount}</span></td>
-                <td className="p-3 text-slate-500 text-xs">{new Date(u.lastActive).toLocaleDateString()}</td>
+              <tr key={i} className="theme-table-row">
+                <td className="p-3 theme-text-primary text-sm">{u.name}</td>
+                <td className="p-3 theme-text-secondary text-sm">{u.totalLogs}</td>
+                <td className="p-3"><span className={`${u.protectedCount > 0 ? 'text-red-400' : 'theme-text-muted'} text-sm`}>{u.protectedCount}</span></td>
+                <td className="p-3 theme-text-muted text-xs">{new Date(u.lastActive).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

@@ -1,8 +1,81 @@
 @import "tailwindcss";
 
+/* ─── Theme Variables ─── */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Theme-aware palette (defaults to dark) */
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-gradient-from: #020617;
+  --bg-gradient-via: #0f172a;
+  --bg-gradient-to: #172554;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.1);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --surface-divider: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverted: #0f172a;
+  --header-bg: rgba(2, 6, 23, 0.8);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --tab-active-bg: rgba(34, 211, 238, 0.2);
+  --tab-active-text: #67e8f9;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.05);
+  --btn-secondary-border: rgba(255, 255, 255, 0.1);
+  --btn-secondary-text: #cbd5e1;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: #ffffff;
+  --input-placeholder: #64748b;
+  --spinner-color: #22d3ee;
+  --protected-border: #ef4444;
+  --protected-bg: rgba(239, 68, 68, 0.05);
+  --protected-border-subtle: rgba(239, 68, 68, 0.1);
+  --bar-from: #06b6d4;
+  --bar-to: #3b82f6;
+  --table-header-text: #94a3b8;
+  --table-row-hover: rgba(255, 255, 255, 0.05);
+  --tooltip-bg: #1e293b;
+}
+
+/* ─── Light theme overrides ─── */
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-gradient-from: #f0f9ff;
+  --bg-gradient-via: #f8fafc;
+  --bg-gradient-to: #eff6ff;
+  --surface: rgba(15, 23, 42, 0.04);
+  --surface-hover: rgba(15, 23, 42, 0.08);
+  --surface-border: rgba(15, 23, 42, 0.1);
+  --surface-divider: rgba(15, 23, 42, 0.06);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverted: #ffffff;
+  --header-bg: rgba(248, 250, 252, 0.85);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --tab-active-bg: rgba(6, 182, 212, 0.12);
+  --tab-active-text: #0891b2;
+  --btn-secondary-bg: rgba(15, 23, 42, 0.05);
+  --btn-secondary-border: rgba(15, 23, 42, 0.12);
+  --btn-secondary-text: #475569;
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(15, 23, 42, 0.15);
+  --input-text: #0f172a;
+  --input-placeholder: #94a3b8;
+  --spinner-color: #0891b2;
+  --protected-border: #dc2626;
+  --protected-bg: rgba(239, 68, 68, 0.06);
+  --protected-border-subtle: rgba(239, 68, 68, 0.15);
+  --bar-from: #0891b2;
+  --bar-to: #2563eb;
+  --table-header-text: #64748b;
+  --table-row-hover: rgba(15, 23, 42, 0.04);
+  --tooltip-bg: #ffffff;
 }
 
 @theme inline {
@@ -32,4 +105,320 @@ body {
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+
+/* ─────────────────────────────────────────────────
+   Theme Toggle Button — Animated Sun/Moon Switch
+   ───────────────────────────────────────────────── */
+
+.theme-toggle-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle-btn:focus-visible .toggle-track {
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.5);
+}
+
+/* Track */
+.toggle-track {
+  position: relative;
+  width: 64px;
+  height: 32px;
+  border-radius: 9999px;
+  overflow: hidden;
+  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-track.dark {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.5),
+              0 0 12px rgba(34, 211, 238, 0.15);
+}
+
+.toggle-track.light {
+  background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1),
+              0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+/* Stars */
+.stars-container {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.stars-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.stars-container.hidden {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #fef3c7;
+  border-radius: 50%;
+  animation: twinkle 2s ease-in-out infinite alternate;
+}
+.star-1 { top: 6px; left: 38px; animation-delay: 0s; }
+.star-2 { top: 14px; left: 48px; animation-delay: 0.6s; }
+.star-3 { top: 22px; left: 42px; animation-delay: 1.2s; }
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Clouds */
+.clouds-container {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.clouds-container.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.clouds-container.hidden {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 9999px;
+  animation: drift 4s ease-in-out infinite alternate;
+}
+.cloud-1 {
+  width: 18px;
+  height: 6px;
+  top: 8px;
+  right: 6px;
+  animation-delay: 0s;
+}
+.cloud-2 {
+  width: 12px;
+  height: 4px;
+  top: 20px;
+  right: 12px;
+  animation-delay: 1.5s;
+}
+
+@keyframes drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(4px); }
+}
+
+/* Celestial Body (Sun / Moon) */
+.celestial-body {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  top: 4px;
+  border-radius: 50%;
+  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.celestial-body.moon {
+  left: 4px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  box-shadow: 0 0 8px rgba(203, 213, 225, 0.5),
+              inset -2px -2px 4px rgba(100, 116, 139, 0.3);
+  transform: rotate(0deg);
+}
+
+.celestial-body.sun {
+  left: 36px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.6),
+              0 0 28px rgba(251, 191, 36, 0.3);
+  transform: rotate(180deg);
+}
+
+/* Moon Craters */
+.crater {
+  position: absolute;
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 50%;
+  transition: opacity 0.3s ease;
+}
+.crater.visible { opacity: 1; }
+.crater.hidden { opacity: 0; }
+
+.crater-1 { width: 6px; height: 6px; top: 4px; left: 3px; }
+.crater-2 { width: 4px; height: 4px; top: 12px; left: 10px; }
+.crater-3 { width: 3px; height: 3px; top: 6px; left: 14px; }
+
+/* Sun Rays */
+.sun-ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 6px;
+  margin-top: -15px;
+  margin-left: -1px;
+  background: #fbbf24;
+  border-radius: 2px;
+  transform-origin: 1px 15px;
+  transition: opacity 0.3s ease;
+}
+.sun-ray.visible {
+  opacity: 0.7;
+  animation: ray-pulse 2s ease-in-out infinite alternate;
+}
+.sun-ray.hidden {
+  opacity: 0;
+}
+
+@keyframes ray-pulse {
+  0% { opacity: 0.4; height: 5px; }
+  100% { opacity: 0.9; height: 7px; }
+}
+
+
+/* ─────────────────────────────────────────
+   Theme-aware utility classes
+   ───────────────────────────────────────── */
+
+/* Backgrounds */
+.theme-bg-page {
+  background: linear-gradient(135deg, var(--bg-gradient-from), var(--bg-gradient-via), var(--bg-gradient-to));
+}
+.theme-bg-header {
+  background: var(--header-bg);
+}
+.theme-bg-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--surface-border);
+}
+.theme-bg-surface {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+}
+.theme-bg-surface-hover:hover {
+  background: var(--surface-hover);
+}
+
+/* Text */
+.theme-text-primary   { color: var(--text-primary); }
+.theme-text-secondary { color: var(--text-secondary); }
+.theme-text-muted     { color: var(--text-muted); }
+
+/* Dividers */
+.theme-divide > * + * {
+  border-top: 1px solid var(--surface-divider);
+}
+
+/* Tab active */
+.theme-tab-active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+}
+
+/* Buttons */
+.theme-btn-secondary {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+}
+.theme-btn-secondary:hover {
+  background: var(--surface-hover);
+}
+
+/* Inputs */
+.theme-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+}
+.theme-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+/* Progress bars */
+.theme-bar-track {
+  background: var(--surface);
+}
+.theme-bar-fill {
+  background: linear-gradient(to right, var(--bar-from), var(--bar-to));
+}
+
+/* Table */
+.theme-table-header {
+  color: var(--table-header-text);
+}
+.theme-table-row:hover {
+  background: var(--table-row-hover);
+}
+
+/* Tooltip */
+.theme-tooltip {
+  background: var(--tooltip-bg);
+  color: var(--text-primary);
+}
+
+/* Protected */
+.theme-protected-bg {
+  background: var(--protected-bg);
+  border: 1px solid var(--protected-border-subtle);
+}
+
+/* Login page light mode */
+[data-theme="light"] .login-bg {
+  background: linear-gradient(135deg, #f0f9ff, #f8fafc, #eff6ff) !important;
+}
+[data-theme="light"] .login-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .login-glow-1 {
+  background: rgba(6, 182, 212, 0.08) !important;
+}
+[data-theme="light"] .login-glow-2 {
+  background: rgba(37, 99, 235, 0.06) !important;
+}
+
+/* Light mode specific card shadow */
+[data-theme="light"] .theme-bg-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Smooth transition for all themed elements */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Exclude the toggle itself from the global transition to avoid conflicts */
+.theme-toggle-btn,
+.theme-toggle-btn * {
+  transition: unset;
+}
+/* Re-apply specific transitions for toggle internals */
+.toggle-track,
+.celestial-body,
+.stars-container,
+.clouds-container,
+.crater,
+.sun-ray {
+  /* transitions are defined inline on each class above */
 }
