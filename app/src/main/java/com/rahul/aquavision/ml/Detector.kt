@@ -203,26 +203,34 @@ class Detector(
         return applyNMS(boundingBoxes)
     }
 
-    private fun applyNMS(boxes: List<BoundingBox>) : MutableList<BoundingBox> {
-        val sortedBoxes = boxes.sortedByDescending { it.cnf }.toMutableList()
-        val selectedBoxes = mutableListOf<BoundingBox>()
+    /**
+     * Soft-NMS: Instead of hard-removing overlapping boxes, decay their confidence
+     * using a Gaussian penalty. This preserves valid detections of similar fish
+     * near each other while still suppressing true duplicates.
+     */
+    private fun applyNMS(boxes: List<BoundingBox>): MutableList<BoundingBox> {
+        val sorted = boxes.sortedByDescending { it.cnf }.toMutableList()
+        val selected = mutableListOf<BoundingBox>()
 
-        while(sortedBoxes.isNotEmpty()) {
-            val first = sortedBoxes.first()
-            selectedBoxes.add(first)
-            sortedBoxes.remove(first)
+        while (sorted.isNotEmpty()) {
+            val best = sorted.removeAt(0)
+            selected.add(best)
 
-            val iterator = sortedBoxes.iterator()
+            val iterator = sorted.listIterator()
             while (iterator.hasNext()) {
-                val nextBox = iterator.next()
-                val iou = calculateIoU(first, nextBox)
-                if (iou >= IOU_THRESHOLD) {
+                val box = iterator.next()
+                val iou = calculateIoU(best, box)
+                // Gaussian decay: high IoU → big penalty, low IoU → almost no penalty
+                val decayedConf = box.cnf * Math.exp(-(iou * iou) / SOFT_NMS_SIGMA.toDouble()).toFloat()
+                if (decayedConf < CONFIDENCE_THRESHOLD) {
                     iterator.remove()
+                } else {
+                    iterator.set(box.copy(cnf = decayedConf))
                 }
             }
         }
 
-        return selectedBoxes
+        return selected
     }
 
     private fun calculateIoU(box1: BoundingBox, box2: BoundingBox): Float {
@@ -246,7 +254,8 @@ class Detector(
         private const val INPUT_STANDARD_DEVIATION = 255f
         private val INPUT_IMAGE_TYPE = DataType.FLOAT32
         private val OUTPUT_IMAGE_TYPE = DataType.FLOAT32
-        private const val CONFIDENCE_THRESHOLD = 0.4F
-        private const val IOU_THRESHOLD = 0.7F
+        private const val CONFIDENCE_THRESHOLD = 0.55F   // Raised from 0.4 → reject uncertain species guesses
+        private const val IOU_THRESHOLD = 0.5F            // Lowered from 0.7 → suppress overlapping duplicates
+        private const val SOFT_NMS_SIGMA = 0.5F           // Gaussian decay factor for Soft-NMS
     }
 }
