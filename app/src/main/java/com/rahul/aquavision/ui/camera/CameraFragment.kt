@@ -836,7 +836,16 @@ class CameraFragment : Fragment(), Detector.DetectorListener {
             if (_binding != null) {
                 binding.overlay.setResults(emptyList(), emptyList())
                 updateTotalCount()
+                binding.loadingProgress.visibility = View.GONE
+
+                // Show no-detection card with fade-in animation
+                binding.noDetectionText.alpha = 0f
                 binding.noDetectionText.visibility = View.VISIBLE
+                binding.noDetectionText.animate()
+                    .alpha(1f)
+                    .setDuration(400)
+                    .start()
+
                 binding.detectionList.visibility = View.GONE
                 detectionAdapter.updateDetections(emptyList())
             }
@@ -847,7 +856,9 @@ class CameraFragment : Fragment(), Detector.DetectorListener {
         lastResults = boundingBoxes
         activity?.runOnUiThread {
             if (_binding != null) {
-                binding.inferenceTime.text = getString(R.string.inference_time_ms, inferenceTime)
+                // Combined HUD display: count + inference time
+                binding.inferenceTime.text = "Detecting: ${boundingBoxes.size}  ·  ${inferenceTime}ms"
+                binding.loadingProgress.visibility = View.GONE
 
                 val groupedList = boundingBoxes.groupBy { it.clsName }
 
@@ -874,11 +885,17 @@ class CameraFragment : Fragment(), Detector.DetectorListener {
 
                 updateTotalCount()
                 if (detectionItems.isEmpty()) {
+                    // Show error card with animation
+                    binding.noDetectionText.alpha = 0f
                     binding.noDetectionText.visibility = View.VISIBLE
+                    binding.noDetectionText.animate().alpha(1f).setDuration(400).start()
                     binding.detectionList.visibility = View.GONE
                 } else {
                     binding.noDetectionText.visibility = View.GONE
+                    // Fade in detection list
+                    binding.detectionList.alpha = 0f
                     binding.detectionList.visibility = View.VISIBLE
+                    binding.detectionList.animate().alpha(1f).setDuration(300).start()
                     detectionAdapter.updateDetections(detectionItems)
                 }
 
