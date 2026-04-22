@@ -20,10 +20,10 @@ class LlmHelper(
             throw RuntimeException(context.getString(R.string.model_not_found, modelPath))
         }
 
-        // Initialize without a listener in options (Fixes 'Unresolved reference')
+        // Initialize with optimized token settings for faster response
         val options = LlmInference.LlmInferenceOptions.builder()
             .setModelPath(modelPath)
-            .setMaxTokens(1024)
+            .setMaxTokens(512)  // Reduced from 1024 for faster initial response
             .build()
 
         llmInference = LlmInference.createFromOptions(context, options)

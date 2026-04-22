@@ -4,19 +4,91 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_chat_gradient">
 
+    <!-- Subtle glow accent at top -->
+    <View
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:alpha="0.08"
+        android:background="@drawable/bg_ai_avatar"
+        android:translationX="-60dp"
+        android:translationY="-60dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/chatHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="14dp"
+        android:background="#0C1020"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- AI Avatar in header -->
+        <FrameLayout
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_ai_avatar">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_chat_ai"
+                android:contentDescription="@string/fish_ai"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fish_ai"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/online"
+                android:textColor="#22D3EE"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Messages RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:clipToPadding="false"
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/chatHeader"
         app:layout_constraintBottom_toTopOf="@id/inputLayout"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Scroll Down FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnScrollDown"
         android:layout_width="wrap_content"
@@ -25,43 +97,61 @@
         android:src="@android:drawable/arrow_down_float"
         android:contentDescription="@string/scroll_to_bottom"
         android:visibility="gone"
-        app:backgroundTint="#007AFF"
-        app:tint="#FFFFFF"
+        app:backgroundTint="#1A1F35"
+        app:tint="#22D3EE"
         app:fabSize="mini"
+        app:borderWidth="1dp"
         app:layout_constraintBottom_toTopOf="@id/inputLayout"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Modern Input Bar -->
     <LinearLayout
         android:id="@+id/inputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="10dp"
+        android:background="@drawable/bg_chat_input_bar"
+        android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- Input field in pill shape -->
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:layout_weight="1"
+            android:layout_marginEnd="10dp"
             android:hint="@string/ask_about_fish"
-            android:padding="12dp"
-            android:background="@android:color/transparent" />
+            android:textColorHint="#4A5580"
+            android:textColor="#E2E8F0"
+            android:textSize="14sp"
+            android:paddingHorizontal="20dp"
+            android:background="@drawable/bg_chat_input"
+            android:imeOptions="actionSend"
+            android:inputType="text"
+            android:maxLines="1" />
 
-        <Button
+        <!-- Circular send button -->
+        <ImageButton
             android:id="@+id/btnSend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/send" />
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_send_arrow"
+            android:scaleType="center"
+            android:background="@drawable/bg_send_button"
+            android:contentDescription="@string/send"
+            android:padding="10dp" />
     </LinearLayout>
 
+    <!-- Model Download Overlay -->
     <LinearLayout
         android:id="@+id/progressOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#DD000000"
+        android:background="#EE080B1A"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="32dp"
@@ -71,27 +161,53 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- Overlay icon -->
+        <FrameLayout
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_ai_avatar">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_chat_ai"
+                android:contentDescription="@string/fish_ai"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
         <TextView
             android:id="@+id/tvProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/model_not_found_title"
-            android:textColor="#FFFFFF"
+            android:textColor="#E2E8F0"
             android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Download the AI model to enable Fish AI chat"
+            android:textColor="#6B7DB3"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
 
         <TextView
             android:id="@+id/tvDownloadLink"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/download_model_link"
-            android:textColor="#448AFF"
+            android:textColor="#22D3EE"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:gravity="center"
             android:padding="12dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="16dp"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"/>
@@ -99,15 +215,21 @@
         <Button
             android:id="@+id/btnLoadModel"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/select_model_file" />
+            android:layout_height="48dp"
+            android:paddingHorizontal="32dp"
+            android:text="@string/select_model_file"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:fontFamily="sans-serif-medium"
+            android:background="@drawable/bg_send_button" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:indeterminateTint="#22D3EE" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

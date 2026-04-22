@@ -5,6 +5,7 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -27,8 +28,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
 
     private lateinit var rvChat: RecyclerView
     private lateinit var etMessage: EditText
-    private lateinit var btnSend: Button
+    private lateinit var btnSend: ImageButton
     private lateinit var btnScrollDown: FloatingActionButton
+    private lateinit var tvStatus: TextView
 
     // Overlay Components
     private lateinit var progressOverlay: View
@@ -36,6 +38,8 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     private lateinit var tvDownloadLink: TextView
     private lateinit var btnLoadModel: Button
     private lateinit var progressBar: ProgressBar
+
+    private var isGenerating = false
 
     private val pickModelLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         if (uri != null) {
@@ -51,6 +55,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         etMessage = view.findViewById(R.id.etMessage)
         btnSend = view.findViewById(R.id.btnSend)
         btnScrollDown = view.findViewById(R.id.btnScrollDown)
+        tvStatus = view.findViewById(R.id.tvStatus)
 
         progressOverlay = view.findViewById(R.id.progressOverlay)
         tvProgress = view.findViewById(R.id.tvProgress)
@@ -64,11 +69,23 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         checkAndInitModel()
 
         btnSend.setOnClickListener {
-            val text = etMessage.text.toString()
-            if (text.isNotEmpty()) {
+            val text = etMessage.text.toString().trim()
+            if (text.isNotEmpty() && !isGenerating) {
                 sendMessage(text)
                 etMessage.text.clear()
             }
+        }
+
+        // Allow sending with keyboard action button
+        etMessage.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                val text = etMessage.text.toString().trim()
+                if (text.isNotEmpty() && !isGenerating) {
+                    sendMessage(text)
+                    etMessage.text.clear()
+                }
+                true
+            } else false
         }
 
         btnLoadModel.setOnClickListener {
@@ -102,7 +119,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         // Manual Scroll Down Button Logic
         btnScrollDown.setOnClickListener {
             if (chatAdapter.itemCount > 0) {
-                rvChat.scrollToPosition(chatAdapter.itemCount - 1)
+                rvChat.smoothScrollToPosition(chatAdapter.itemCount - 1)
             }
         }
     }
@@ -156,6 +173,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         val layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
         rvChat.layoutManager = layoutManager
         rvChat.adapter = chatAdapter
+        rvChat.itemAnimator = null  // Disable default animations for smoother streaming
 
         rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -170,17 +188,25 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     }
 
     private fun initializeLlm() {
+        tvStatus.text = getString(R.string.loading)
+        tvStatus.setTextColor(0xFFFBBF24.toInt()) // amber while loading
+
         lifecycleScope.launch(Dispatchers.Default) {
             try {
                 llmHelper = LlmHelper(requireContext(), modelManager.getModelPath())
                 llmHelper.initModel()
 
                 launch(Dispatchers.Main) {
+                    tvStatus.text = getString(R.string.online)
+                    tvStatus.setTextColor(0xFF22D3EE.toInt()) // cyan when ready
                     chatAdapter.addMessage(getString(R.string.fish_ai_ready), false)
+                    rvChat.scrollToPosition(chatAdapter.itemCount - 1)
                     progressOverlay.visibility = View.GONE
                 }
             } catch (e: Throwable) {
                 launch(Dispatchers.Main) {
+                    tvStatus.text = "Error"
+                    tvStatus.setTextColor(0xFFEF4444.toInt()) // red on error
                     progressOverlay.visibility = View.VISIBLE
                     tvProgress.text = getString(R.string.error_ram_low_or_model_invalid, e.message)
                     btnLoadModel.visibility = View.VISIBLE
@@ -192,15 +218,35 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     }
 
     private fun sendMessage(userText: String) {
+        isGenerating = true
+        btnSend.alpha = 0.5f
+
         chatAdapter.addMessage(userText, true)
-        chatAdapter.addMessage("", false)
         rvChat.scrollToPosition(chatAdapter.itemCount - 1)
+
+        // Show typing indicator
+        chatAdapter.addTypingIndicator()
+        rvChat.scrollToPosition(chatAdapter.itemCount - 1)
+
+        tvStatus.text = getString(R.string.typing)
+        tvStatus.setTextColor(0xFFFBBF24.toInt())
 
         lifecycleScope.launch(Dispatchers.IO) {
             var currentResponse = ""
+            var typingRemoved = false
 
             try {
                 llmHelper.generateResponse(userText).collect { partialString ->
+                    // Remove typing indicator on first token
+                    if (!typingRemoved) {
+                        typingRemoved = true
+                        withContext(Dispatchers.Main) {
+                            chatAdapter.removeTypingIndicator()
+                            chatAdapter.addMessage("", false)
+                            rvChat.scrollToPosition(chatAdapter.itemCount - 1)
+                        }
+                    }
+
                     if (partialString.length > currentResponse.length && partialString.startsWith(currentResponse)) {
                         currentResponse = partialString
                     } else {
@@ -209,12 +255,27 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
 
                     withContext(Dispatchers.Main) {
                         chatAdapter.updateLastMessage(currentResponse)
+                        // Auto-scroll to bottom during generation
+                        if (!rvChat.canScrollVertically(1)) {
+                            rvChat.scrollToPosition(chatAdapter.itemCount - 1)
+                        }
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    if (!typingRemoved) {
+                        chatAdapter.removeTypingIndicator()
+                        chatAdapter.addMessage("", false)
+                    }
                     chatAdapter.updateLastMessage(getString(R.string.chat_error, e.message))
                 }
+            }
+
+            withContext(Dispatchers.Main) {
+                isGenerating = false
+                btnSend.alpha = 1f
+                tvStatus.text = getString(R.string.online)
+                tvStatus.setTextColor(0xFF22D3EE.toInt())
             }
         }
     }
