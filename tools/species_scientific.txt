@@ -1,0 +1,50 @@
+# FishNet Species List — Scientific Names
+# One species per line. Lines starting with # are ignored.
+# Run: python fish_name_mapper.py
+
+# --- Indian Freshwater Fish ---
+Labeo rohita
+Catla catla
+Cirrhinus mrigala
+Hypophthalmichthys molitrix
+Cyprinus carpio
+Oreochromis niloticus
+Clarias batrachus
+Pangasianodon hypophthalmus
+Wallago attu
+Channa striata
+Channa punctata
+Ompok pabda
+Mystus tengara
+Puntius sophore
+Systomus sarana
+Macrognathus aculeatus
+Gudusia chapra
+Ailia coila
+Labeo calbasu
+Heteropneustes fossilis
+Anabas testudineus
+Notopterus notopterus
+
+# --- Indian Marine Fish ---
+Tenualosa ilisha
+Rastrelliger kanagurta
+Sardinella longiceps
+Epinephelus coioides
+Lates calcarifer
+Pampus argenteus
+Parastromateus niger
+Scomberomorus commerson
+Lutjanus argentimaculatus
+Mullus barbatus
+
+# --- Reef Species ---
+Bolbometopon muricatum
+Chaetodon auriga
+Cheilinus undulatus
+Cromileptes altivelis
+Acanthaster planci
+Tridacna gigas
+Plectorhinchus chaetodonoides
+Panulirus ornatus
+Gymnothorax javanicus
