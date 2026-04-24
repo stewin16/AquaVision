@@ -173,20 +173,60 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
       {/* Daily Trend */}
       <div className="theme-bg-card rounded-2xl p-5">
         <h3 className="theme-text-primary font-semibold mb-4">Daily Catch Trend (30 days)</h3>
-        <div className="flex items-end gap-1 h-32">
-          {stats.dailyTrend.map((d, i) => {
-            const max = Math.max(...stats.dailyTrend.map(x => x.count), 1);
-            const h = (d.count / max) * 100;
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                <div className="opacity-0 group-hover:opacity-100 absolute -top-8 theme-tooltip text-xs px-2 py-1 rounded whitespace-nowrap transition" style={{ background: 'var(--tooltip-bg)', color: 'var(--text-primary)' }}>
-                  {d.date}: {d.count}
-                </div>
-                <div className="w-full theme-bar-fill rounded-t transition-all" style={{ height: `${h}%`, minHeight: d.count > 0 ? '4px' : '0' }} />
+        {stats.dailyTrend.length === 0 ? (
+          <div className="h-32 flex items-center justify-center">
+            <p className="theme-text-muted text-sm">No catch data in the last 30 days</p>
+          </div>
+        ) : (
+          <>
+            <div className="relative" style={{ height: '160px' }}>
+              {/* Y-axis max label */}
+              {(() => {
+                const max = Math.max(...stats.dailyTrend.map(x => x.count), 1);
+                return (
+                  <span className="absolute -top-1 left-0 theme-text-muted text-[10px] font-mono">{max}</span>
+                );
+              })()}
+              {/* Horizontal grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ opacity: 0.15 }}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} className="w-full border-b" style={{ borderColor: 'var(--text-muted)' }} />
+                ))}
               </div>
-            );
-          })}
-        </div>
+              {/* Bars */}
+              <div className="flex items-end gap-[2px] h-full relative z-10">
+                {stats.dailyTrend.map((d, i) => {
+                  const max = Math.max(...stats.dailyTrend.map(x => x.count), 1);
+                  const hPx = d.count > 0 ? Math.max((d.count / max) * 152, 4) : 0;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                      <div
+                        className="opacity-0 group-hover:opacity-100 absolute -top-8 theme-tooltip text-[10px] px-2 py-1 rounded whitespace-nowrap transition-opacity z-20 pointer-events-none"
+                        style={{ background: 'var(--tooltip-bg)', color: 'var(--text-primary)' }}
+                      >
+                        {d.date}: {d.count}
+                      </div>
+                      <div
+                        className="w-full theme-bar-fill rounded-t transition-all duration-200 group-hover:opacity-100"
+                        style={{ height: `${hPx}px`, opacity: d.count > 0 ? 0.75 : 0.15, minHeight: d.count > 0 ? '4px' : '1px', background: d.count > 0 ? undefined : 'var(--text-muted)' }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {/* X-axis labels */}
+            <div className="flex mt-2">
+              {stats.dailyTrend.map((d, i) => (
+                <div key={i} className="flex-1 text-center">
+                  {i % 5 === 0 ? (
+                    <span className="theme-text-muted text-[9px] font-mono">{d.date}</span>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

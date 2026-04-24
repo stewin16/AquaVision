@@ -27,6 +27,11 @@ export async function GET() {
       .map(([name, count]) => ({ name, count }));
     const now = Date.now();
     const dailyMap: Record<string, number> = {};
+    // Pre-fill all 30 days with 0 so the chart is always continuous
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now - i * 86400000).toISOString().split('T')[0];
+      dailyMap[d] = 0;
+    }
     for (const log of logs) {
       const ts = log.timestamp as number;
       if (ts >= now - 30 * 86400000) {
@@ -35,7 +40,7 @@ export async function GET() {
       }
     }
     const dailyTrend = Object.entries(dailyMap).sort(([a],[b]) => a.localeCompare(b))
-      .map(([date, count]) => ({ date, count }));
+      .map(([date, count]) => ({ date: date.slice(5), count }));
     return NextResponse.json({ success: true, data: {
       totalCatches, protectedCount, uniqueSpecies: Object.keys(speciesMap).length,
       avgFreshness: freshCount > 0 ? (freshTotal / freshCount).toFixed(1) : 'N/A',
